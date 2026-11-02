@@ -6,6 +6,8 @@ from typing import Any
 from pydantic import BaseModel, Field, field_validator
 from pydantic.json_schema import SkipJsonSchema
 
+from app.schemas.models import ATSScoreRecord
+
 
 class ApplicationStatus(str, Enum):
     """The seven stable tracker columns (decoupled from i18n labels)."""
@@ -38,6 +40,8 @@ class ApplicationResponse(BaseModel):
     position: int
     created_at: str
     updated_at: str
+    # Last stored ATS score of the applied resume; null when never scored.
+    ats_score: ATSScoreRecord | None = None
 
 
 class ApplicationDetailResponse(ApplicationResponse):

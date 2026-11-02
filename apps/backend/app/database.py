@@ -1147,6 +1147,36 @@ class Database:
             await session.commit()
             return True
 
+    async def get_ats_scores(
+        self, tailored_resume_ids: list[str]
+    ) -> dict[str, dict[str, Any]]:
+        """Newest stored ATS score record per tailored resume, in one query.
+
+        Rows without a score are ignored; resumes with none are omitted.
+        """
+        if not tailored_resume_ids:
+            return {}
+        async with self._session() as session:
+            result = await session.execute(
+                select(Improvement)
+                .where(
+                    Improvement.tailored_resume_id.in_(set(tailored_resume_ids)),
+                    Improvement.ats_score.is_not(None),
+                )
+                .order_by(Improvement.created_at)
+            )
+            rows = result.scalars().all()
+        newest: dict[str, tuple[str, str, dict[str, Any]]] = {}
+        for row in rows:
+            record = row.ats_score
+            if not isinstance(record, dict) or "score" not in record:
+                continue
+            key = (str(record.get("calculated_at") or ""), row.created_at)
+            current = newest.get(row.tailored_resume_id)
+            if current is None or key > current[:2]:
+                newest[row.tailored_resume_id] = (*key, copy.deepcopy(record))
+        return {rid: entry[2] for rid, entry in newest.items()}
+
     # -- Application (tracker) operations -----------------------------------
 
     async def _next_position(self, session: AsyncSession, status: str) -> int:

@@ -24,6 +24,23 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/applications", tags=["Application Tracker"])
 
 
+async def _with_ats_scores(
+    applications: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Attach each card's stored ATS score record (best effort, one query).
+
+    A failed lookup leaves the cards unscored rather than failing the board.
+    """
+    try:
+        scores = await db.get_ats_scores([a["resume_id"] for a in applications])
+    except DatabaseBusyError:
+        raise
+    except Exception as e:
+        logger.warning("Failed to load ATS scores for applications: %s", e)
+        return applications
+    return [{**a, "ats_score": scores.get(a["resume_id"])} for a in applications]
+
+
 def _group_by_status(
     applications: list[dict[str, Any]],
 ) -> dict[str, list[ApplicationResponse]]:
@@ -49,7 +66,7 @@ def _group_by_status(
 async def list_applications() -> ApplicationListResponse:
     """List all applications grouped by status column."""
     try:
-        applications = await db.list_applications()
+        applications = await _with_ats_scores(await db.list_applications())
     except DatabaseBusyError:
         raise
     except Exception as e:
@@ -92,6 +109,7 @@ async def create_application(request: ManualApplicationCreate) -> ApplicationRes
             detail="Failed to create application. Please try again.",
         ) from e
 
+    [application] = await _with_ats_scores([application])
     return ApplicationResponse(**application)
 
 
@@ -118,6 +136,7 @@ async def get_application_detail(application_id: str) -> ApplicationDetailRespon
         # Detail is best-effort beyond the card itself; never 500 the modal.
         logger.warning("Failed to load detail context for %s: %s", application_id, e)
 
+    [application] = await _with_ats_scores([application])
     return ApplicationDetailResponse(
         **application, job_content=job_content, resume=resume
     )
@@ -164,6 +183,7 @@ async def update_application(
         )
     if updated is None:
         raise HTTPException(status_code=404, detail="Application not found")
+    [updated] = await _with_ats_scores([updated])
     return ApplicationResponse(**updated)
 
 

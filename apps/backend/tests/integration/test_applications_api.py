@@ -244,3 +244,47 @@ class TestRobustnessFixes:
         assert resp.status_code == 500
         stats = await isolated_db.get_stats()
         assert stats["total_jobs"] == 0  # no orphan job left behind
+
+
+class TestAtsScore:
+    @staticmethod
+    async def _score(isolated_db, resume_id: str, overall: float) -> None:
+        await isolated_db.create_improvement("master", resume_id, "job-1", [])
+        await isolated_db.set_ats_score(
+            resume_id,
+            {
+                "score": {"overall_score": overall, "sub_scores": {}},
+                "calculated_at": "2026-01-01T00:00:00Z",
+            },
+        )
+
+    async def test_list_includes_score_or_null(self, isolated_db):
+        await self._score(isolated_db, "r1", 82.0)
+        await _seed_card(isolated_db, job_id="j1", resume_id="r1", status="applied")
+        await _seed_card(isolated_db, job_id="j2", resume_id="r2", status="applied")
+        async with _client() as client:
+            cards = (await client.get("/api/v1/applications")).json()["columns"][
+                "applied"
+            ]
+        by_resume = {c["resume_id"]: c for c in cards}
+        assert by_resume["r1"]["ats_score"]["score"]["overall_score"] == 82.0
+        assert by_resume["r2"]["ats_score"] is None
+
+    async def test_detail_includes_score(self, isolated_db):
+        await self._score(isolated_db, "r1", 61.5)
+        card = await _seed_card(isolated_db, job_id="j1", resume_id="r1")
+        async with _client() as client:
+            body = (
+                await client.get(f"/api/v1/applications/{card['application_id']}")
+            ).json()
+        assert body["ats_score"]["score"]["overall_score"] == 61.5
+
+    async def test_patch_keeps_score(self, isolated_db):
+        await self._score(isolated_db, "r1", 77.0)
+        card = await _seed_card(isolated_db, job_id="j1", resume_id="r1")
+        async with _client() as client:
+            resp = await client.patch(
+                f"/api/v1/applications/{card['application_id']}",
+                json={"status": "interview"},
+            )
+        assert resp.json()["ats_score"]["score"]["overall_score"] == 77.0
