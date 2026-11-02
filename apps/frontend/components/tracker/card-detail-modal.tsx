@@ -19,6 +19,7 @@ import { Alert } from '@/components/ui/alert';
 import { StatusIndicator } from '@/components/ui/status-indicator';
 import { useTranslations } from '@/lib/i18n';
 import { formatDate } from '@/lib/format-date';
+import { ATSScoreCard } from '@/components/tailor/ats-score-card';
 import { getApplicationDetail, updateApplication, type ApplicationDetail } from '@/lib/api/tracker';
 
 interface CardDetailModalProps {
@@ -116,6 +117,8 @@ export function CardDetailModal({
                   </span>
                 )}
               </div>
+
+              {detail.ats_score && <ATSScoreCard atsScore={detail.ats_score.score} />}
 
               <div className="space-y-1">
                 <Label>{t('tracker.modal.jobDescription')}</Label>

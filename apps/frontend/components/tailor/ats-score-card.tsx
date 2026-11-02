@@ -56,9 +56,9 @@ const SUB_SCORE_LABEL_KEYS: Record<keyof ATSSubScores, string> = {
   date_consistency: 'tailor.atsScore.dateConsistency',
 };
 
-type Band = 'high' | 'mid' | 'low';
-const band = (value: number): Band => (value >= 80 ? 'high' : value >= 60 ? 'mid' : 'low');
-const BAND_TEXT: Record<Band, string> = {
+export type Band = 'high' | 'mid' | 'low';
+export const band = (value: number): Band => (value >= 80 ? 'high' : value >= 60 ? 'mid' : 'low');
+export const BAND_TEXT: Record<Band, string> = {
   high: 'text-success',
   mid: 'text-warning-text',
   low: 'text-destructive',

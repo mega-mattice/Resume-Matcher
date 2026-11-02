@@ -1457,6 +1457,8 @@
       "description": "为某个职位定制简历，或手动添加一项，即可开始追踪。"
     },
     "card": {
+      "atsScore": "ATS",
+      "atsScoreNone": "无 ATS 评分",
       "companyUnknown": "未知公司",
       "roleUnknown": "未命名职位",
       "sharedResume": "共享简历",

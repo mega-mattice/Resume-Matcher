@@ -1457,6 +1457,8 @@
       "description": "求人に合わせて履歴書を調整するか、手動で追加して追跡を開始しましょう。"
     },
     "card": {
+      "atsScore": "ATS",
+      "atsScoreNone": "ATSスコアなし",
       "companyUnknown": "会社名不明",
       "roleUnknown": "役職名なし",
       "sharedResume": "共有された履歴書",

@@ -1457,6 +1457,8 @@
       "description": "Adapta un currículum a un empleo o añade uno manualmente para empezar."
     },
     "card": {
+      "atsScore": "ATS",
+      "atsScoreNone": "Sin puntuación ATS",
       "companyUnknown": "Empresa desconocida",
       "roleUnknown": "Puesto sin título",
       "sharedResume": "Currículum compartido",

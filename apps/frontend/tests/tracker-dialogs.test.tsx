@@ -135,4 +135,38 @@ describe('CardDetailModal', () => {
     expect(screen.getByText(expected)).toBeInTheDocument();
     expect(screen.getByRole('alert')).toHaveTextContent('tracker.modal.resumeUnavailable');
   });
+
+  it('shows the ATS score breakdown only when the card has a stored score', async () => {
+    vi.mocked(getApplicationDetail).mockResolvedValue({
+      ...detail,
+      ats_score: {
+        calculated_at: '2026-01-01T00:00:00Z',
+        score: {
+          overall_score: 72.5,
+          sub_scores: {
+            keyword_match: 70,
+            skills_coverage: 80,
+            title_match: null,
+            section_completeness: 100,
+            date_consistency: null,
+          },
+          missing_keywords: ['Kubernetes'],
+          injectable_keywords: [],
+          recommendations: [],
+        },
+      },
+    } as ApplicationDetail);
+    const { unmount } = render(
+      <CardDetailModal applicationId="a1" open onOpenChange={vi.fn()} onUpdated={vi.fn()} />
+    );
+    expect(await screen.findByText('72.5')).toBeInTheDocument();
+    expect(screen.getByText('tailor.atsScore.keywordMatch')).toBeInTheDocument();
+    expect(screen.getByText('Kubernetes')).toBeInTheDocument();
+    unmount();
+
+    vi.mocked(getApplicationDetail).mockResolvedValue({ ...detail, ats_score: null });
+    render(<CardDetailModal applicationId="a1" open onOpenChange={vi.fn()} onUpdated={vi.fn()} />);
+    await screen.findByText('tracker.columns.interview');
+    expect(screen.queryByText('tailor.atsScore.title')).not.toBeInTheDocument();
+  });
 });

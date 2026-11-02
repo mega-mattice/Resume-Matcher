@@ -1457,6 +1457,8 @@
       "description": "Personnalisez un CV pour un poste, ou ajoutez-en un manuellement, pour commencer le suivi."
     },
     "card": {
+      "atsScore": "ATS",
+      "atsScoreNone": "Aucun score ATS",
       "companyUnknown": "Entreprise inconnue",
       "roleUnknown": "Poste sans titre",
       "sharedResume": "CV partagé",

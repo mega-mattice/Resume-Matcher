@@ -1,4 +1,5 @@
 import { apiFetch, apiPost, apiPatch, apiDelete } from './client';
+import type { ATSScoreRecord } from './resume';
 
 // The seven stable Kanban columns (keys are decoupled from i18n labels).
 export type ApplicationStatus =
@@ -33,6 +34,8 @@ export interface Application {
   position: number;
   created_at: string;
   updated_at: string;
+  /** Last stored ATS score of the applied resume; null when never scored. */
+  ats_score?: ATSScoreRecord | null;
 }
 
 export interface ApplicationDetail extends Application {

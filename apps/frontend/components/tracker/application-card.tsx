@@ -8,6 +8,8 @@ import { DotsSixVertical, Stack } from '@phosphor-icons/react';
 import { Card } from '@/components/ui/card';
 import { useTranslations } from '@/lib/i18n';
 import { formatDate } from '@/lib/format-date';
+import { band, BAND_TEXT } from '@/components/tailor/ats-score-card';
+import { cn } from '@/lib/utils';
 import type { Application } from '@/lib/api/tracker';
 
 /** The house control focus ring, offset against the white card. */
@@ -44,6 +46,9 @@ export function ApplicationCard({
 
   const company = application.company?.trim();
   const role = application.role?.trim();
+  const rawOverall = application.ats_score?.score.overall_score;
+  // Band on the shown integer so "80" is never coloured as a 79.
+  const atsOverall = rawOverall == null ? null : Math.round(rawOverall);
 
   return (
     <div ref={setNodeRef} style={style} className="transition-opacity">
@@ -74,6 +79,16 @@ export function ApplicationCard({
                 {formatDate(application.applied_at, locale)}
               </p>
             )}
+            <p className="mt-1 font-mono text-xs uppercase tracking-wide tabular-nums">
+              <span className="text-steel">{t('tracker.card.atsScore')} </span>
+              {atsOverall == null ? (
+                <span className="text-steel" aria-label={t('tracker.card.atsScoreNone')}>
+                  —
+                </span>
+              ) : (
+                <span className={cn('font-bold', BAND_TEXT[band(atsOverall)])}>{atsOverall}</span>
+              )}
+            </p>
             {sharedResume && (
               <span className="mt-1 inline-flex items-center gap-1 border border-ink bg-paper px-1 font-mono text-xs uppercase text-ink-soft">
                 <Stack aria-hidden="true" className="size-4" />
