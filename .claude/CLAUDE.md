@@ -34,6 +34,12 @@ Before exploring code, read [docs/agent/README.md](../docs/agent/README.md) for 
 
 ---
 
+## Dev Servers
+
+Before starting a server, check `ss -ltn` for the port. Port 3000 can be held by a process invisible from WSL (stale build served, new routes 404): start on a free port (`next dev -p 3100`).
+
+---
+
 ## Essential Commands
 
 ```bash
